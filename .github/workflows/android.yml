@@ -14,16 +14,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
 
       - name: Extract engine version
         run: |
           VERSION=$(git describe --tags --always 2>/dev/null || echo "dev-${GITHUB_SHA::7}")
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
-      - name: Setup NDK Path
+      - name: Setup NDK Path & Dependencies
         run: |
           NDK_BIN="$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
           echo "$NDK_BIN" >> $GITHUB_PATH
+          
+          # Download sse2neon.h into src/ if not present
+          if [ ! -f "src/sse2neon.h" ]; then
+            curl -sL https://raw.githubusercontent.com/DLTcollab/sse2neon/master/sse2neon.h -o src/sse2neon.h
+          fi
 
       - name: Build Winter (ARM64 v8-A)
         run: |
