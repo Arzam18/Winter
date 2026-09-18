@@ -31,6 +31,14 @@ jobs:
             curl -sL https://raw.githubusercontent.com/DLTcollab/sse2neon/master/sse2neon.h -o src/sse2neon.h
           fi
 
+      - name: Patch Makefile & Memory Alignment for Android
+        run: |
+          # Update outdated NDK API level 21 to modern API level 28
+          sed -i 's/android21/android28/g' Makefile
+
+          # Replace std::aligned_alloc with Android-compatible memalign
+          find src -type f \( -name "*.cc" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" \) -exec sed -i 's/std::aligned_alloc/memalign/g' {} +
+
       - name: Build Winter (ARM64 v8-A)
         run: |
           make clean || true
